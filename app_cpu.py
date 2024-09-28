@@ -50,7 +50,7 @@ pipe = FluxControlNetPipeline.from_pretrained(
 pipe.enable_sequential_cpu_offload()
 
 MAX_SEED = 1000000
-MAX_PIXEL_BUDGET = 2048 * 2048
+MAX_PIXEL_BUDGET = 4096 * 4096
 
 
 def process_input(input_image, upscale_factor, **kwargs):
@@ -151,10 +151,10 @@ with gr.Blocks(css=css) as demo:
         with gr.Column(scale=1):
             num_inference_steps = gr.Slider(
                 label="Number of Inference Steps",
-                minimum=8,
-                maximum=30,
-                step=1,
-                value=20,
+                minimum=5,
+                maximum=40,
+                step=5,
+                value=25,
             )
             upscale_factor = gr.Slider(
                 label="Upscale Factor",
@@ -165,9 +165,9 @@ with gr.Blocks(css=css) as demo:
             )
             controlnet_conditioning_scale = gr.Slider(
                 label="Controlnet Conditioning Scale",
-                minimum=0.1,
-                maximum=1.5,
-                step=0.1,
+                minimum=0.3,
+                maximum=0.9,
+                step=0.05,
                 value=0.6,
             )
             seed = gr.Slider(
