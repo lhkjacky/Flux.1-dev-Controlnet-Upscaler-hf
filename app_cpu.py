@@ -34,7 +34,7 @@ model_path = snapshot_download(
     repo_type="model", 
     ignore_patterns=["*.md", "*..gitattributes"],
     local_dir="FLUX.1-dev",
-    token="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", # type a new token-id.
+    token="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", # type a new token-id.
 )
 
 
