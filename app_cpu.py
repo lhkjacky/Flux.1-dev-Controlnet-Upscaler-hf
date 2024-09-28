@@ -50,7 +50,7 @@ pipe = FluxControlNetPipeline.from_pretrained(
 pipe.enable_sequential_cpu_offload()
 
 MAX_SEED = 1000000
-MAX_PIXEL_BUDGET = 1024 * 1024
+MAX_PIXEL_BUDGET = 2048 * 2048
 
 
 def process_input(input_image, upscale_factor, **kwargs):
@@ -125,7 +125,9 @@ def infer(
 
     # resize to target desired size
     image = image.resize((w_original * upscale_factor, h_original * upscale_factor))
-    image.save("output.jpg")
+    
+    output_name = "Flux.1-dev Upscaler.jpg"
+    image.save(output_name, format='JPEG', quality=95)
     # convert to numpy
     return [true_input_image, image, seed]
 
@@ -137,8 +139,6 @@ with gr.Blocks(css=css) as demo:
     # ⚡ Flux.1-dev Upscaler ControlNet ⚡
     This is an interactive demo of [Flux.1-dev Upscaler ControlNet](https://huggingface.co/jasperai/Flux.1-dev-Controlnet-Upscaler) taking as input a low resolution image to generate a high resolution image.
     Currently running on {power_device}.
-
-    *Note*: Even though the model can handle higher resolution images, due to GPU memory constraints, this demo was limited to a generated output not exceeding a pixel budget of 1024x1024. If the requested size exceeds that limit, the input will be first resized keeping the aspect ratio such that the output of the controlNet model does not exceed the allocated pixel budget. The output is then resized to the targeted shape using a simple resizing. This may explain some artifacts for high resolution input. To adress this, run the demo locally or consider implementing a tiling strategy. Happy upscaling! 🚀
     """
     )
 
@@ -152,14 +152,14 @@ with gr.Blocks(css=css) as demo:
             num_inference_steps = gr.Slider(
                 label="Number of Inference Steps",
                 minimum=8,
-                maximum=50,
+                maximum=30,
                 step=1,
-                value=28,
+                value=20,
             )
             upscale_factor = gr.Slider(
                 label="Upscale Factor",
                 minimum=1,
-                maximum=4,
+                maximum=8,
                 step=1,
                 value=4,
             )
@@ -183,52 +183,7 @@ with gr.Blocks(css=css) as demo:
     with gr.Row():
         result = ImageSlider(label="Input / Output", type="pil", interactive=True)
 
-    examples = gr.Examples(
-        examples=[
-            [42, False, "examples/image_1.jpg", 28, 4, 0.6],
-            [42, False, "examples/image_2.jpg", 28, 4, 0.6],
-            [42, False, "examples/image_3.jpg", 28, 4, 0.6],
-            [42, False, "examples/image_4.jpg", 28, 4, 0.6],
-            [42, False, "examples/image_5.jpg", 28, 4, 0.6],
-            [42, False, "examples/image_6.jpg", 28, 4, 0.6],
-        ],
-        inputs=[
-            seed,
-            randomize_seed,
-            input_im,
-            num_inference_steps,
-            upscale_factor,
-            controlnet_conditioning_scale,
-        ],
-        fn=infer,
-        outputs=result,
-        cache_examples="lazy",
-    )
 
-    # examples = gr.Examples(
-    #     examples=[
-    #         #[42, False, "examples/image_1.jpg", 28, 4, 0.6],
-    #         [42, False, "examples/image_2.jpg", 28, 4, 0.6],
-    #         #[42, False, "examples/image_3.jpg", 28, 4, 0.6],
-    #         #[42, False, "examples/image_4.jpg", 28, 4, 0.6],
-    #         [42, False, "examples/image_5.jpg", 28, 4, 0.6],
-    #         [42, False, "examples/image_6.jpg", 28, 4, 0.6],
-    #         [42, False, "examples/image_7.jpg", 28, 4, 0.6],
-    #     ],
-    #     inputs=[
-    #         seed,
-    #         randomize_seed,
-    #         input_im,
-    #         num_inference_steps,
-    #         upscale_factor,
-    #         controlnet_conditioning_scale,
-    #     ],
-    # )
-
-    gr.Markdown("**Disclaimer:**")
-    gr.Markdown(
-        "This demo is only for research purpose. Jasper cannot be held responsible for the generation of NSFW (Not Safe For Work) content through the use of this demo. Users are solely responsible for any content they create, and it is their obligation to ensure that it adheres to appropriate and ethical standards. Jasper provides the tools, but the responsibility for their use lies with the individual user."
-    )
     gr.on(
         [run_button.click],
         fn=infer,
